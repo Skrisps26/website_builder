@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_AWS_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_AWS_API_URL;
 const API_KEY = process.env.NEXT_PUBLIC_AWS_API_KEY;
 
 interface ChatResponse {

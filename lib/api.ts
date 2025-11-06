@@ -27,6 +27,21 @@ interface AWSBackendResponse {
   };
 }
 
+interface Project {
+  projectId: string;
+  userId: string;
+  prompt: string;
+  status: string;
+  createdAt: string;
+  previewUrl?: string;
+  artifactZipKey?: string;
+}
+
+interface GetProjectsResponse {
+  projects: Project[];
+  count: number;
+}
+
 export async function chatAPI(prompt: string): Promise<ChatResponse> {
   try {
     const headers: Record<string, string> = {
@@ -98,5 +113,36 @@ export async function checkProjectStatus(userId: string, projectId: string): Pro
   } catch (error) {
     console.error("Status API error:", error);
     throw new Error("Failed to check project status");
+  }
+}
+
+export async function getProjects(userId: string = 'test-user-123'): Promise<GetProjectsResponse> {
+  try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json"
+    };
+    
+    // Add API key if provided
+    if (API_KEY) {
+      headers["x-api-key"] = API_KEY;
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/projects?userId=${userId}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      // Return empty list if endpoint doesn't exist yet
+      console.warn(`Projects endpoint returned ${response.status}, returning empty list`);
+      return { projects: [], count: 0 };
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Get projects API error:", error);
+    // Return empty list on error instead of crashing
+    return { projects: [], count: 0 };
   }
 }

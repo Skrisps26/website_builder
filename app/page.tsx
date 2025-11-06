@@ -1,9 +1,19 @@
 "use client"
 
-import { useState } from "react"
-import { chatAPI } from "@/lib/api"
+import { useState, useEffect } from "react"
+import { chatAPI, getProjects } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+
+interface Project {
+  projectId: string
+  userId: string
+  prompt: string
+  status: string
+  createdAt: string
+  previewUrl?: string
+  artifactZipKey?: string
+}
 
 interface ProjectState {
   projectId: string | null
@@ -24,6 +34,24 @@ export default function Home() {
     loading: false,
     error: null,
   })
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loadingProjects, setLoadingProjects] = useState(true)
+
+  useEffect(() => {
+    loadProjects()
+  }, [])
+
+  const loadProjects = async () => {
+    try {
+      setLoadingProjects(true)
+      const data = await getProjects('test-user-123')
+      setProjects(data.projects)
+    } catch (error) {
+      console.error('Failed to load projects:', error)
+    } finally {
+      setLoadingProjects(false)
+    }
+  }
 
   const handleGenerateApp = async () => {
     if (!prompt.trim()) {
@@ -247,6 +275,46 @@ export default function Home() {
             </div>
           </Card>
         )}
+
+        {/* Previous Projects Section */}
+        <Card className="p-6 bg-card border border-border shadow-lg">
+          <h2 className="text-2xl font-bold text-foreground mb-6">
+            Previous Projects ({projects.length})
+          </h2>
+          {loadingProjects ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+              <p className="text-muted-foreground font-medium ml-4">Loading projects...</p>
+            </div>
+          ) : projects.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No projects yet. Generate your first app above!</p>
+          ) : (
+            <div className="space-y-4">
+              {projects.map((proj) => (
+                <Card key={proj.projectId} className="p-4 bg-secondary/5 border border-border hover:border-primary/30 transition-colors">
+                  <p className="font-semibold text-foreground mb-2">{proj.prompt}</p>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Status: <span className="font-medium">{proj.status}</span> • {new Date(proj.createdAt).toLocaleString()}
+                  </p>
+                  {proj.previewUrl && (
+                    <a
+                      href={proj.previewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
+                    >
+                      View Preview →
+                    </a>
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
+        </Card>
       </div>
     </main>
   )

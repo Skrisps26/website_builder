@@ -30,7 +30,7 @@ Detailed setup instructions will be added once the AWS Lambda components are upl
 
 ## 🧸 Misc
 
-> “uwu” — because even cloud code deserves to be cute ☁️💕
+> uwu
 
 ---
 
